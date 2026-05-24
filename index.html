@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="D2Cコンサル">
+<title>D2C起業コンサルAI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+  :root {
+    --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a26;
+    --border: #2a2a3d; --accent: #7c6aff; --accent2: #ff6a9b;
+    --accent3: #6affd4; --text: #e8e8f0; --text-muted: #6b6b8a;
+    --user-bubble: #1e1e35; --ai-bubble: #161625;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; height: 100svh; display: flex; flex-direction: column; overflow: hidden; }
+  .header { padding: 14px 20px; padding-top: max(14px, env(safe-area-inset-top)); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .logo { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; color: white; flex-shrink: 0; }
+  .header-info h1 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); }
+  .header-info p { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .status-dot { width: 8px; height: 8px; background: var(--accent3); border-radius: 50%; margin-left: auto; box-shadow: 0 0 8px var(--accent3); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .phase-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; gap: 8px; flex-shrink: 0; overflow-x: auto; scrollbar-width: none; }
+  .phase-bar::-webkit-scrollbar { display: none; }
+  .phase-chip { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); color: var(--text-muted); background: transparent; white-space: nowrap; transition: all 0.2s; font-family: 'Noto Sans JP', sans-serif; }
+  .phase-chip:hover, .phase-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(124,106,255,0.1); }
+  .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .msg { display: flex; gap: 10px; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user { flex-direction: row-reverse; }
+  .avatar { width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; }
+  .avatar.ai { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+  .avatar.user { background: var(--surface2); color: var(--accent3); border: 1px solid var(--border); }
+  .bubble { max-width: 80%; padding: 12px 16px; border-radius: 14px; font-size: 13.5px; line-height: 1.7; }
+  .msg.ai .bubble { background: var(--ai-bubble); border: 1px solid var(--border); border-top-left-radius: 4px; color: var(--text); }
+  .msg.user .bubble { background: var(--user-bubble); border: 1px solid rgba(124,106,255,0.3); border-top-right-radius: 4px; color: var(--text); }
+  .bubble strong { color: var(--accent3); font-weight: 600; }
+  .typing { display: flex; gap: 4px; padding: 14px 16px; }
+  .typing span { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: bounce 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+  .quick-area { padding: 10px 20px; display: flex; gap: 8px; flex-wrap: wrap; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
+  .quick-btn { padding: 6px 12px; border-radius: 20px; font-size: 11.5px; cursor: pointer; border: 1px solid var(--border); color: var(--text-muted); background: transparent; transition: all 0.2s; font-family: 'Noto Sans JP', sans-serif; }
+  .quick-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(255,106,155,0.08); }
+  .input-area { padding: 12px 20px; padding-bottom: max(16px, env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0; }
+  textarea { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 13.5px; padding: 10px 14px; resize: none; outline: none; min-height: 42px; max-height: 120px; line-height: 1.5; transition: border-color 0.2s; }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--text-muted); }
+  .send-btn { width: 42px; height: 42px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.2s, transform 0.15s; }
+  .send-btn:hover { opacity: 0.85; transform: scale(1.05); }
+  .send-btn:active { transform: scale(0.95); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">D2C</div>
+  <div class="header-info">
+    <h1>D2C起業コンサルAI</h1>
+    <p>月商100万円ロードマップ・営業スキル×副業特化</p>
+  </div>
+  <div class="status-dot"></div>
+</div>
+<div class="phase-bar">
+  <button class="phase-chip active" onclick="setPhase(this,'今すぐやること（転職活動中）')">🔥 今すぐ</button>
+  <button class="phase-chip" onclick="setPhase(this,'転職活動中の副業仕込み期間')">📋 転職中</button>
+  <button class="phase-chip" onclick="setPhase(this,'転職後1〜3ヶ月目の副業開始期')">🚀 副業開始</button>
+  <button class="phase-chip" onclick="setPhase(this,'転職後4〜6ヶ月目のスケール期')">📈 スケール</button>
+  <button class="phase-chip" onclick="setPhase(this,'転職後7〜12ヶ月目の月商100万達成期')">💰 月商100万</button>
+</div>
+<div class="messages" id="messages"></div>
+<div class="quick-area">
+  <button class="quick-btn" onclick="quickSend('今日一番最初にやることを1つだけ教えて')">今日やること</button>
+  <button class="quick-btn" onclick="quickSend('顔出しなしでSNSを伸ばす具体的な方法を教えて')">SNS戦略</button>
+  <button class="quick-btn" onclick="quickSend('電子書籍の作り方と売り方を教えて')">電子書籍</button>
+  <button class="quick-btn" onclick="quickSend('転職しながら副業する時間の作り方を教えて')">時間術</button>
+  <button class="quick-btn" onclick="quickSend('月商100万までの数字の計画を教えて')">数字の計画</button>
+</div>
+<div class="input-area">
+  <textarea id="input" placeholder="何でも聞いてください..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+  <button class="send-btn" id="sendBtn" onclick="sendMsg()">
+    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+  </button>
+</div>
+<script>
+const SYSTEM = `あなたは「D2C起業コンサルAI」です。
+ユーザーのプロフィール：
+- 電話営業2年・社内トップ10回の実績を持つ男性
+- 2025年3月末に離職、現在転職活動中
+- SaaS・人材系の営業職に転職予定（固定600万＋インセンティブで1000万目標）
+- 転職後に副業でD2Cビジネスを立ち上げ、1年以内に月商100万円を目標とする
+- 初期予算はほぼゼロ、顔出しなしでSNS発信を始めたい
+- 自分の事業を持ちたい・労働集約から脱却したいという強い動機がある
+- まず自分の営業ノウハウを情報商品として販売する方向で検討中
+回答スタイル：具体的・実践的・今日からできるアドバイス。数字と事例を使う。励ましつつ現実的な期待値を伝える。最後に「今日やること」を1つ提示。簡潔に、長い場合は箇条書き。フランクなトーン。`;
+let history = [];
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatAI(text) { text = escHtml(text); text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'); text = text.replace(/\n/g,'<br>'); return text; }
+function addMsg(role, html, isHtml=false) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div'); div.className=`msg ${role}`;
+  div.innerHTML=`<div class="avatar ${role}">${role==='ai'?'AI':'ME'}</div><div class="bubble">${isHtml?html:escHtml(html).replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+function showTyping() {
+  const msgs=document.getElementById('messages');
+  const div=document.createElement('div'); div.className='msg ai'; div.id='typing-indicator';
+  div.innerHTML=`<div class="avatar ai">AI</div><div class="bubble typing"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping() { const t=document.getElementById('typing-indicator'); if(t)t.remove(); }
+function setPhase(el,phase) { document.querySelectorAll('.phase-chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); quickSend(`「${phase}」において自分が今やるべきことを具体的に教えて`); }
+async function callClaude(userMsg) {
+  history.push({role:'user',content:userMsg});
+  const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:history})});
+  if(!response.ok) throw new Error(`Error ${response.status}`);
+  const data=await response.json();
+  const reply=data.content?.map(c=>c.text||'').join('')||'応答を取得できませんでした。';
+  history.push({role:'assistant',content:reply}); return reply;
+}
+async function sendMsg() {
+  const inp=document.getElementById('input'); const btn=document.getElementById('sendBtn');
+  const text=inp.value.trim(); if(!text||btn.disabled)return;
+  inp.value=''; inp.style.height=''; btn.disabled=true;
+  addMsg('user',text); showTyping();
+  try { const reply=await callClaude(text); removeTyping(); addMsg('ai',formatAI(reply),true); }
+  catch(e) { removeTyping(); addMsg('ai',`⚠️ エラー: ${escHtml(e.message)}`,true); }
+  btn.disabled=false; inp.focus();
+}
+function quickSend(text) { document.getElementById('input').value=text; sendMsg(); }
+function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+function autoResize(el) { el.style.height=''; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+window.addEventListener('load',()=>{ addMsg('ai',formatAI('こんにちは！D2C起業コンサルAIです 🚀\n\n電話営業トップ10回の実績、それだけで十分な武器です。\nあなたの状況に合わせた具体的なアクションを一緒に決めていきましょう！\n\nフェーズボタンやクイックボタンからでも、自由にテキストで聞いてもOKです。'),true); });
+</script>
+</body>
+</html>
